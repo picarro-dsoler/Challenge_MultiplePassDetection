@@ -97,8 +97,15 @@ def get_line_from_angle(row, ortho_vec):
     bottom = tuple(np.array(row.geometry.centroid.coords[0]) - (row.geometry.length/2 + tol) * np.array(ortho_vec))
     return LineString([top, bottom])
 
+def get_central_line_vertical(row):
+    bounds = row.geometry.minimum_rotated_rectangle.bounds
+    min_x, min_y, max_x, max_y = bounds
+    central_x = (min_x + max_x) / 2
+    central_y = (min_y + max_y) / 2
+    return LineString([(central_x, min_y), (central_x, max_y)])
 
-def get_bottom_two_points(geom,angle):
+
+def get_bottom_two_points(geom,angle,rotattion = True):
     coords = list(geom.exterior.coords)
     # Remove duplicates and convert to Point objects
     coords = list(dict.fromkeys(coords))
@@ -106,8 +113,10 @@ def get_bottom_two_points(geom,angle):
     bottom_two = sorted(coords, key=lambda pt: pt[1])[:2]
     # Now sort these two points only by x ascending (left to right)
     bottom_two = sorted(bottom_two, key=lambda pt: pt[0])
-    bottom_two = [rotate(Point(pt), angle=angle, origin=(0, 0)) for pt in bottom_two]
-  
+    if rotattion:
+        bottom_two = [rotate(Point(pt), angle=angle, origin=(0, 0)) for pt in bottom_two]
+    else:
+        bottom_two = [Point(pt) for pt in bottom_two]
     return [tuple(pt.coords[0]) for pt in bottom_two]
 
 
@@ -136,8 +145,7 @@ def safe_unit_vector(bottom_points, tol=1e-8):
     # If we get here, input was not valid, so return to previous logic: None
     # (i.e., do what the old safe_unit_vector used to do on fallback)
     return None
-    # Not enough points or bad input: return None
-    return None
+
 
 # Rotate geometries back and extract the two bottommost points in y (after rotation)
 
