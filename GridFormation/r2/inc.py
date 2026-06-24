@@ -98,12 +98,12 @@ def get_line_from_angle(row, ortho_vec):
     return LineString([top, bottom])
 
 def get_central_line_vertical(row):
+    tol = 0.5
     bounds = row.geometry.minimum_rotated_rectangle.bounds
     min_x, min_y, max_x, max_y = bounds
     central_x = (min_x + max_x) / 2
     central_y = (min_y + max_y) / 2
-    return LineString([(central_x, min_y), (central_x, max_y)])
-
+    return LineString([(central_x, min_y-tol), (central_x, max_y+tol)])
 
 def get_bottom_two_points(geom,angle,rotattion = True):
     coords = list(geom.exterior.coords)
