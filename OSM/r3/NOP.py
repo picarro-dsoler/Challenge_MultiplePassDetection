@@ -369,8 +369,11 @@ class NOPAccessor:
                 bc.to_crs(self.cell_gdf.crs, inplace=True)
                 survey_cell = gpd.overlay(argument['Breadcrumb'][['geometry','Order']], cell_buffer, how='intersection')
                 nop = pd.DataFrame({'n_passes': survey_cell.groupby('cell_idx').apply(count_lines)})
-            cell_wnop = pd.merge(cell_buffer, nop, on='cell_idx', how='left')
-            return cell_buffer,survey_cell,cell_wnop,nop
+            cell_wnop = pd.merge(self.cell_gdf.copy(), nop, on='cell_idx', how='left')
+            translated_cell_wnop = cell_wnop.copy()
+            translated_cell_wnop['geometry'] = translated_cell_wnop['geometry'].translate(xoff=self.center.x, yoff=self.center.y)
+            translated_cell_wnop.set_geometry('geometry', inplace=True)
+            return cell_buffer,survey_cell,translated_cell_wnop
 
     def create_network(self):
         #Create the nodes from the cell centroid
